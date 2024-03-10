@@ -1,5 +1,12 @@
 import numpy as np
 import random
+
+# ToDo: remove for the POS grading system
+try:
+    from tqdm import trange
+except ImportError:
+    trange = range
+
 from typing import Optional
 
 import pystk
@@ -142,7 +149,7 @@ class PyTux:
 
             fig, ax = plt.subplots(1, 1)
 
-        for t in range(max_frames):
+        for t in trange(max_frames):
             state.update()
             track.update()
 
