@@ -1,7 +1,6 @@
 import numpy as np
 import random
 
-# ToDo: remove for the POS grading system
 try:
     from tqdm import trange
 except ImportError:
