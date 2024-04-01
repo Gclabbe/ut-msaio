@@ -4,7 +4,6 @@ It will not ship with your code, editing it will only change the test cases loca
 remote tests.
 """
 
-from tqdm import tqdm
 import torch
 from .grader import Grader, Case
 
@@ -232,9 +231,9 @@ class DetectorGrader(Grader):
     def test_format(self):
         """return value"""
         det = self.module.load_model().eval()
-        # ToDo: remove sampling when really testing
-        dataset = self.module.utils.DetectionSuperTuxDataset("dense_data/valid", min_size=0)  # , sample_rate=0.1)
-        for i, (img, *gts) in enumerate(tqdm(dataset, desc="Detector Grading")):
+        for i, (img, *gts) in enumerate(
+            self.module.utils.DetectionSuperTuxDataset("dense_data/valid", min_size=0)
+        ):
             d = det.detect(img)
             assert len(d) == 3, "Return three lists of detections"
             assert (
@@ -243,8 +242,6 @@ class DetectorGrader(Grader):
             assert all(
                 len(i) == 5 for c in d for i in c
             ), "Each detection should be a tuple (score, cx, cy, w/2, h/2)"
-            # ToDo: put back when really testing
-            # if i > 0:  # 10:
             if i > 10:
                 break
 
@@ -260,10 +257,9 @@ class DetectionGrader(Grader):
         self.pr_box = [PR() for _ in range(3)]
         self.pr_dist = [PR(is_close=point_close) for _ in range(3)]
         self.pr_iou = [PR(is_close=box_iou) for _ in range(3)]
-
-        # ToDo: remove sampling when really testing
-        dataset = self.module.utils.DetectionSuperTuxDataset("dense_data/valid", min_size=0)  # , sample_rate=0.1)
-        for img, *gts in tqdm(dataset, desc="Detection Grading"):
+        for img, *gts in self.module.utils.DetectionSuperTuxDataset(
+            "dense_data/valid", min_size=0
+        ):
             with torch.no_grad():
                 detections = det.detect(img.to(device))
                 for i, gt in enumerate(gts):
@@ -271,101 +267,74 @@ class DetectionGrader(Grader):
                     self.pr_dist[i].add(detections[i], gt)
                     self.pr_iou[i].add(detections[i], gt)
 
-    @staticmethod
-    def compute_score(ap, min_val, max_val):
-        return max(min(ap, max_val) - min_val, 0) / (max_val - min_val)
-
-    @staticmethod
-    def return_string(ap, score, max_score, min_val, max_val):
-        return f"AP = {ap :>5.3f}: {score * max_score :>4.1f}/{max_score} (min {min_val :<4.2f}, max {max_val :<4.2f})"
-
     @Case(score=10)
     def test_box_ap0(self, min_val=0.5, max_val=0.75):
         """Average precision (inside box c=0)"""
         ap = self.pr_box[0].average_prec
-        score = self.compute_score(ap=ap, min_val=min_val, max_val=max_val)
-        return_str = self.return_string(ap=ap, score=score, max_score=10, min_val=min_val, max_val=max_val)
-        return score, return_str
+        return (
+            max(min(ap, max_val) - min_val, 0) / (max_val - min_val),
+            "AP = %0.3f" % ap,
+        )
 
     @Case(score=10)
     def test_box_ap1(self, min_val=0.25, max_val=0.45):
         """Average precision (inside box c=1)"""
         ap = self.pr_box[1].average_prec
-        score = self.compute_score(ap=ap, min_val=min_val, max_val=max_val)
-        return_str = self.return_string(ap=ap, score=score, max_score=10, min_val=min_val, max_val=max_val)
-        return score, return_str
+        return (
+            max(min(ap, max_val) - min_val, 0) / (max_val - min_val),
+            "AP = %0.3f" % ap,
+        )
 
     @Case(score=10)
     def test_box_ap2(self, min_val=0.6, max_val=0.85):
         """Average precision (inside box c=2)"""
         ap = self.pr_box[2].average_prec
-        score = self.compute_score(ap=ap, min_val=min_val, max_val=max_val)
-        return_str = self.return_string(ap=ap, score=score, max_score=10, min_val=min_val, max_val=max_val)
-        return score, return_str
+        return (
+            max(min(ap, max_val) - min_val, 0) / (max_val - min_val),
+            "AP = %0.3f" % ap,
+        )
 
     @Case(score=15)
     def test_dist_ap0(self, min_val=0.5, max_val=0.72):
         """Average precision (distance c=0)"""
         ap = self.pr_dist[0].average_prec
-        score = self.compute_score(ap=ap, min_val=min_val, max_val=max_val)
-        return_str = self.return_string(ap=ap, score=score, max_score=15, min_val=min_val, max_val=max_val)
-        return score, return_str
+        return (
+            max(min(ap, max_val) - min_val, 0) / (max_val - min_val),
+            "AP = %0.3f" % ap,
+        )
 
     @Case(score=15)
     def test_dist_ap1(self, min_val=0.25, max_val=0.45):
         """Average precision (distance c=1)"""
         ap = self.pr_dist[1].average_prec
-        score = self.compute_score(ap=ap, min_val=min_val, max_val=max_val)
-        return_str = self.return_string(ap=ap, score=score, max_score=15, min_val=min_val, max_val=max_val)
-        return score, return_str
+        return (
+            max(min(ap, max_val) - min_val, 0) / (max_val - min_val),
+            "AP = %0.3f" % ap,
+        )
 
     @Case(score=15)
     def test_dist_ap2(self, min_val=0.6, max_val=0.85):
         """Average precision (distance c=2)"""
         ap = self.pr_dist[2].average_prec
-        score = self.compute_score(ap=ap, min_val=min_val, max_val=max_val)
-        return_str = self.return_string(ap=ap, score=score, max_score=15, min_val=min_val, max_val=max_val)
-        return score, return_str
-
-    @staticmethod
-    def return_ec_string(ap, score, min_val):
-        return f"AP = {ap :0.3f}: {score :>7d} (min {min_val :<4.2f})"
+        return (
+            max(min(ap, max_val) - min_val, 0) / (max_val - min_val),
+            "AP = %0.3f" % ap,
+        )
 
     @Case(score=3, extra_credit=True)
     def test_iou_ap0(self, min_val=0.5):
         """Average precision (iou > 0.5  c=0) [extra credit]"""
         ap = self.pr_iou[0].average_prec
-        score = True if ap >= min_val else False
-        return (
-            # ap >= min_val,
-            # "AP = %0.3f" % ap
-            score,
-            self.return_ec_string(ap=ap, score=score, min_val=min_val),
-        )
+        return ap >= min_val, "AP = %0.3f" % ap
 
     @Case(score=3, extra_credit=True)
     def test_iou_ap1(self, min_val=0.3):
         """Average precision (iou > 0.5  c=1) [extra credit]"""
         ap = self.pr_iou[1].average_prec
-        # return ap >= min_val, "AP = %0.3f" % ap
-        score = True if ap >= min_val else False
-        return (
-            # ap >= min_val,
-            # "AP = %0.3f" % ap
-            score,
-            self.return_ec_string(ap=ap, score=score, min_val=min_val),
-        )
-
+        return ap >= min_val, "AP = %0.3f" % ap
 
     @Case(score=3, extra_credit=True)
     def test_iou_ap2(self, min_val=0.6):
         """Average precision (iou > 0.5  c=2) [extra credit]"""
         ap = self.pr_iou[2].average_prec
-        # return ap >= min_val, "AP = %0.3f" % ap
-        score = True if ap >= min_val else False
-        return (
-            # ap >= min_val,
-            # "AP = %0.3f" % ap
-            score,
-            self.return_ec_string(ap=ap, score=score, min_val=min_val),
-        )
+        return ap >= min_val, "AP = %0.3f" % ap

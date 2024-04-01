@@ -2,7 +2,12 @@ from .grader import Grader, Case, MultiCase
 
 import numpy as np
 import torchvision.transforms.functional as TF
-from tqdm import trange
+
+try:
+    from tqdm import trange
+except ImportError:
+    trange = range
+
 from os import path
 import torch
 import pystk
@@ -83,9 +88,10 @@ class PySTKGrader(Grader):
                     # image = image.to(device)
                     image = np.array(k.render_data[0].image)
                     image = TF.to_tensor(image).to(device)
-                    aim_point_image = (
-                        self.P(image[None]).squeeze(0).cpu().detach().numpy()
-                    )
+                    pred = self.P(image[None])
+                    aim_point_image = pred.squeeze(0).cpu().detach().numpy()
+                    # ToDo: hack alert!
+                    # aim_point_image = 1 - aim_point_image
 
                 current_vel = np.linalg.norm(kart.velocity)
                 action = self.C(aim_point_image, current_vel)
@@ -113,32 +119,32 @@ class ControllerGrader(PySTKGrader, Grader):
     @Case(score=5)
     def test_lighthouse(self):
         """lighthouse"""
-        return self._test("lighthouse", 550)
+        return self._test("lighthouse", 550)  # 0)
 
     @Case(score=5)
     def test_hacienda(self):
         """hacienda"""
-        return self._test("hacienda", 700)
+        return self._test("hacienda", 700)  # 0)
 
     @Case(score=5)
     def test_snowtuxpeak(self):
         """snowtuxpeak"""
-        return self._test("snowtuxpeak", 700)
+        return self._test("snowtuxpeak", 700)  # 0)
 
     @Case(score=5)
     def test_zengarden(self):
         """zengarden"""
-        return self._test("zengarden", 600)
+        return self._test("zengarden", 600)  # 0)
 
     @Case(score=5)
     def test_cornfield_crossing(self):
         """cornfield_crossing"""
-        return self._test("cornfield_crossing", 750)
+        return self._test("cornfield_crossing", 750)  # 0)
 
     @Case(score=5)
     def test_scotland(self):
         """scotland"""
-        return self._test("scotland", 700)
+        return self._test("scotland", 700)  # 0)
 
 
 class PlannerGrader(PySTKGrader, Grader):
@@ -149,32 +155,32 @@ class PlannerGrader(PySTKGrader, Grader):
     @Case(score=10)
     def test_lighthouse(self, it=0):
         """lighthouse"""
-        return self._test("lighthouse", 650)
+        return self._test("lighthouse", 650)  # 0)
 
     @Case(score=10)
     def test_hacienda(self, it=0):
         """hacienda"""
-        return self._test("hacienda", 700)
+        return self._test("hacienda", 700)  # 0)
 
     @Case(score=10)
     def test_snowtuxpeak(self, it=0):
         """snowtuxpeak"""
-        return self._test("snowtuxpeak", 700)
+        return self._test("snowtuxpeak", 700)  # 0)
 
     @Case(score=10)
     def test_zengarden(self, it=0):
         """zengarden"""
-        return self._test("zengarden", 700)
+        return self._test("zengarden", 700)  # 0)
 
     @Case(score=10)
     def test_cornfield_crossing(self, it=0):
         """cornfield_crossing"""
-        return self._test("cornfield_crossing", 950)
+        return self._test("cornfield_crossing", 950)  # 0)
 
     @Case(score=10)
     def test_scotland(self, it=0):
         """scotland"""
-        return self._test("scotland", 850)
+        return self._test("scotland", 850)  # 0)
 
 
 class NewLevelrGrader(PySTKGrader, Grader):

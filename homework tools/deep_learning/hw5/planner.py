@@ -84,9 +84,9 @@ if __name__ == "__main__":
                 score = 10 if steps < (args.n_frames - 1) else round(how_far * 10, 0)
                 scores.append(int(score))
                 average_score = np.average(scores)
-                print(f"{steps}: {how_far :0.3f} --> {np.sum(scores) :d} --> {average_score :0.2f}")
+                print(f"{i}) {steps}: {how_far :0.3f} --> {np.sum(scores) :d} --> {average_score :0.2f}")
             print(
-                f"{i}/{args.retries}) Score for track {t}: {np.average(scores) :0.2f}"
+                f"{args.retries}) Score for track {t}: {np.average(scores) :0.2f}"
             )
             unique, counts = np.unique(scores, return_counts=True)
             print([f"{x :>4d}" for x in unique])
